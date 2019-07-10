@@ -1,53 +1,67 @@
 import React, {Component} from 'react'
 import styled from 'styled-components'
-import DockBlock from "./dockDiv"
+import DockBlock from "./dock-div"
+import HarbourBlock from "./harbour-div"
+import BayBlock from "./bay-div"
+import Boat from "./boat"
 
-const ROWS = 9
-const COLS = 9
 
 const MainHarbour = styled.main`
     display: grid;
-    grid-template-columns: repeat(${COLS}, 1fr);
-    grid-template-rows: repeat(${ROWS} , 100px);
-    height: calc(100vh - 10px);
+    grid-template-columns: .5fr .5fr 1fr;
+    grid-template-rows: 1fr;
+    height: calc(100vh);
+    position: relative;
 `
-
-const HarbourBlock = styled.div`
-    background-color: lightblue;
-`
-
-const BayBlock = styled.div`
-    background-color: darkblue;
-`
-
-const setupGrid = () => {
-    let gridItems = []
-
-    for (let i = 1; i <= ROWS; i++) {
-        gridItems.push(<DockBlock/>)
-        gridItems.push(<DockBlock/>)
-        gridItems.push(<HarbourBlock></HarbourBlock>)
-        gridItems.push(<HarbourBlock></HarbourBlock>)
-        gridItems.push(<HarbourBlock></HarbourBlock>)
-        gridItems.push(<BayBlock></BayBlock>)
-        gridItems.push(<BayBlock></BayBlock>)
-        gridItems.push(<BayBlock></BayBlock>)
-        gridItems.push(<BayBlock></BayBlock>)
-    }
-    return gridItems
-}
-
 
 class Main extends Component {
     constructor() {
         super()
-        this.state = {harbourControl:[]}
-    } 
+        this.state = {
+            BoatList: []
+        }
+    }
+
+    componentDidMount() {
+        this.timerID = setInterval(
+            () => this.tick(),
+            1000
+        );
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timerID);
+    }
+
+    tick() {
+        if (Math.floor(Math.random() * Math.floor(10)) < 1) {
+            this.spawnBoat()
+        }
+
+        this.moveBoats()
+    }
+
+    spawnBoat() {
+
+        let top = Math.floor(Math.random() * Math.floor(850))
+        let item = { type: "speedBoat", top: top }
+        this.setState(prevState => ({
+            BoatList: [...prevState.BoatList, item]
+        }))
+    }
+
+    moveBoats() {
+
+    }
+      
 
     render() {
         return (
             <MainHarbour>
-                {setupGrid()}
+                <DockBlock/>
+                <HarbourBlock/>
+                <BayBlock/>
+                {this.state.BoatList.map((item, i ) => <Boat boatType={item} key={i} />)}
             </MainHarbour>
         )
     }
