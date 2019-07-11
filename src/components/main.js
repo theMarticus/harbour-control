@@ -3,12 +3,11 @@ import styled from 'styled-components'
 import DockBlock from "./dock-div"
 import HarbourBlock from "./harbour-div"
 import BayBlock from "./bay-div"
-import Boat from "./boat"
 
 
 const MainHarbour = styled.main`
     display: grid;
-    grid-template-columns: .5fr .5fr 1fr;
+    grid-template-columns: .25fr .5fr 1fr;
     grid-template-rows: 1fr;
     height: calc(100vh);
     position: relative;
@@ -18,7 +17,9 @@ class Main extends Component {
     constructor() {
         super()
         this.state = {
-            BoatList: []
+            BayList: [],
+            HarbourWaitingList:[],
+            harbourBoat: []
         }
     }
 
@@ -37,21 +38,80 @@ class Main extends Component {
         if (Math.floor(Math.random() * Math.floor(10)) < 1) {
             this.spawnBoat()
         }
+        this.moveBayBoats()
+        this.harbourControl()
+        this.moveHarbourBoats()
+    }
 
-        this.moveBoats()
+    harbourControl() {
+        if(this.state.HarbourWaitingList.length > 0 && this.state.harbourBoat.length <= 0) {
+            let id = this.state.HarbourWaitingList.shift()
+            let item = [this.state.BayList.find(boat => boat.guid === id )]
+            this.setState(prevState=> ({BayList: prevState.BayList.filter(boat => boat.guid !== id)}))
+            console.log(item)
+            item[0].left = 90
+            item[0].waiting = false
+            this.setState({harbourBoat: item})
+        }
+    }
+
+    moveHarbourBoats(){
+        this.setState(prevState => {
+            prevState.harbourBoat.forEach((boat) => {
+                if (boat.left - boat.speed <= 0) {
+                    if (!boat.waiting){
+                        boat.left = 0
+                        this.setState({harbourBoat: []})
+                    } else {
+
+                    }
+                } else {
+                    boat.left -= boat.speed
+                }
+            })
+        })
     }
 
     spawnBoat() {
-
-        let top = Math.floor(Math.random() * Math.floor(850))
-        let item = { type: "speedBoat", top: top }
+        let type = this.BoatReturn()
         this.setState(prevState => ({
-            BoatList: [...prevState.BoatList, item]
+            BayList: [...prevState.BayList, type]
         }))
     }
 
-    moveBoats() {
+    BoatReturn() {
+        let top = Math.floor(Math.random() * Math.floor(850))
+        let chance = Math.floor(Math.random() * Math.floor(3))
+        let guid = () => {
+            let S4 = () => {
+               return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+            };
+            return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+        }
+        if (chance === 0) {
+            return {guid: guid(), type: "speedBoat", top: top, left: 90, speed: 30, waiting:false}
+        } else if (chance === 1) {
+            return {guid: guid(),type: "sailBoat", top: top, left: 90, speed: 15, waiting:false}
+        } else {
+            return {guid: guid(), type: "cargoBoat", top: top, left: 90, speed: 5, waiting:false}
+        }
+    }
 
+    moveBayBoats() {
+        this.setState(prevState => {
+            prevState.BayList.forEach((boat, index) => {
+                if (boat.left - boat.speed <= 0) {
+                    if (!boat.waiting){
+                        boat.left = 0
+                        this.state.HarbourWaitingList.push(boat.guid)
+                        boat.waiting = true
+                    }
+
+                } else {
+                    boat.left -= boat.speed
+                }
+            })
+        })
     }
       
 
@@ -59,9 +119,8 @@ class Main extends Component {
         return (
             <MainHarbour>
                 <DockBlock/>
-                <HarbourBlock/>
-                <BayBlock/>
-                {this.state.BoatList.map((item, i ) => <Boat boatType={item} key={i} />)}
+                <HarbourBlock boatList={this.state.harbourBoat}/>
+                <BayBlock boatList={this.state.BayList} />
             </MainHarbour>
         )
     }
