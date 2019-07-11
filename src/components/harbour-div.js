@@ -2,6 +2,11 @@ import React, {Component} from 'react'
 import styled from 'styled-components'
 import Boat from './boat'
 
+
+/**
+ * HarbourBlock with a soothing light blue to represent the harbour 
+ * More water effects to be added later
+ */
 const HarbourBlock = styled.div`
     background-color: lightblue;
     height: calc(100vh);
@@ -9,7 +14,10 @@ const HarbourBlock = styled.div`
     position: relative;
 `
 
-
+/**
+ * HarbourDiv react class to handle the one boat with permission to enter the harbour
+ * takes the information from the harbourBoat state in Main
+ */
 class HarbourDiv extends Component {
     render() {
         return (

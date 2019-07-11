@@ -4,7 +4,10 @@ import DockBlock from "./dock-div"
 import HarbourBlock from "./harbour-div"
 import BayBlock from "./bay-div"
 
-
+/**
+ * MainHarbour style using styled components 
+ * Grid chosen as it is quick and easy.
+ */
 const MainHarbour = styled.main`
     display: grid;
     grid-template-columns: .25fr .5fr 1fr;
@@ -12,8 +15,20 @@ const MainHarbour = styled.main`
     height: calc(100vh);
     position: relative;
 `
-
+    /** 
+     * Main handles the logic of the Application.
+     * All State information is stored here and this is where we would add the info to a Database if time allowed.
+     * 
+    */
 class Main extends Component {
+
+    /**
+     * Simple constructor with state
+     * BayList: Has an array of all of the boat in the bay.
+     * HarbourWaitingList holds the id's of the items waiting to enter the harbour.
+     * harbourBoat is an array to keep it the same data type BayList to handle boats
+     * It should hold only one value at any one time.
+     */
     constructor() {
         super()
         this.state = {
@@ -22,6 +37,13 @@ class Main extends Component {
             harbourBoat: []
         }
     }
+    
+
+    /**
+     * CompontDidmount part of the React Life Cycle sets the timer for us. 
+     * 
+     * I set it to once per second to stop over refreshes
+     */
 
     componentDidMount() {
         this.timerID = setInterval(
@@ -30,9 +52,19 @@ class Main extends Component {
         );
     }
 
+    /**
+     * componentWillUnmount another lifecycle method for clean up.
+     */
+
     componentWillUnmount() {
         clearInterval(this.timerID);
     }
+
+    /**
+     * tick()
+     * used for the movement every Second 
+     * It handles the spawn boat timings and the harbour control.
+     */
 
     tick() {
         if (Math.floor(Math.random() * Math.floor(10)) < 1) {
@@ -43,6 +75,11 @@ class Main extends Component {
         this.moveHarbourBoats()
     }
 
+     /**
+     * harbourControl()
+     * Harbour control is set to take the first item from the HarbourWaitingList array and move it to the harbour.
+     * item is set to the first item as there should only be one item in the array at any time. 
+     */
     harbourControl() {
         if(this.state.HarbourWaitingList.length > 0 && this.state.harbourBoat.length <= 0) {
             let id = this.state.HarbourWaitingList.shift()
@@ -55,29 +92,37 @@ class Main extends Component {
         }
     }
 
+    /**
+     * moveHarbourBoats() moves the boast in the harbour, this is only a logic value as time wouldn't allow me to set it to the boats animation
+     * Currently logic and graphics are slightly out but close enough.
+     */
     moveHarbourBoats(){
         this.setState(prevState => {
             prevState.harbourBoat.forEach((boat) => {
                 if (boat.left - boat.speed <= 0) {
-                    if (!boat.waiting){
-                        boat.left = 0
                         this.setState({harbourBoat: []})
-                    } else {
-
-                    }
-                } else {
+                }
+                 else {
                     boat.left -= boat.speed
                 }
             })
         })
     }
-
+    
+    /**
+     * spawnBoat() adds a boat to the BayList, this is called once every 10 time every second 
+     */
     spawnBoat() {
         let type = this.BoatReturn()
         this.setState(prevState => ({
             BayList: [...prevState.BayList, type]
         }))
     }
+
+    /**
+     * BoatReturn() creates a boat for spawnBoat() it adds a random id to every boat for tracking.
+     * this is sort of my odd database tracking without the database
+     */
 
     BoatReturn() {
         let top = Math.floor(Math.random() * Math.floor(850))
@@ -97,6 +142,11 @@ class Main extends Component {
         }
     }
 
+     /**
+     * moveBayBoats()moves "the boat in the bay, and watches the time roll away"
+     * Also adds the boats to the HarbourWaitingList when the reach the Harbour
+     */
+
     moveBayBoats() {
         this.setState(prevState => {
             prevState.BayList.forEach((boat, index) => {
@@ -114,7 +164,12 @@ class Main extends Component {
         })
     }
       
-
+    /**
+     * Render adds the 3 items to the page
+     * DockBlock a fake dock
+     * HarbourBlock for the one boat at a time
+     * BayBlock for all the other boats as they spawn.
+     */
     render() {
         return (
             <MainHarbour>
